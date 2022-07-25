@@ -1,10 +1,12 @@
 import {
-    redeemVoucherButton,
+    queryRedeemVoucherButton,
     renderVoucherPropertiesFromStorage,
-    renderProductsFromStorage,
+    renderProducts,
     getCartAndVoucherFromSessionStorage,
     filterAndReduceProducts
 } from "./lib.js";
+
+const redeemVoucherButton = queryRedeemVoucherButton();
 
 const state = {
     products         : [],
@@ -14,11 +16,11 @@ const state = {
 getCartAndVoucherFromSessionStorage().then(data => {
     state.products = data.products;
     state.voucherProperties = data.voucherProperties;
-    renderProductsFromStorage(state.products);
+    renderProducts(state.products);
     renderVoucherPropertiesFromStorage(state.voucherProperties, state.products);
 });
 
-const fetchRedeemVoucher = async (voucherProperties, products) => {
+const redeemVoucher = async (voucherProperties, products) => {
     try {
         const { items } = filterAndReduceProducts(products);
         const response = await fetch("/redeem-voucher", {
@@ -31,13 +33,14 @@ const fetchRedeemVoucher = async (voucherProperties, products) => {
         });
 
         const data = await response.json();
-        if (data.status !== 200) {
+        if (response.status !== 200) {
             throw new Error(data.message);
         }
         if (data.status !== "success") {
             throw new Error("Redeem voucher is not possible");
         }
         redeemVoucherButton.innerHTML = `${data.message}`;
+        window.sessionStorage.clear();
         return data;
     } catch (error) {
         redeemVoucherButton.innerHTML = `${error.message}`;
@@ -46,6 +49,5 @@ const fetchRedeemVoucher = async (voucherProperties, products) => {
 
 redeemVoucherButton.addEventListener("click", e => {
     e.preventDefault();
-    fetchRedeemVoucher(state.voucherProperties, state.products);
-    window.sessionStorage.clear();
+    redeemVoucher(state.voucherProperties, state.products);
 });

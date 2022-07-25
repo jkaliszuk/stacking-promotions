@@ -103,7 +103,7 @@ html {
   border: none;
 }
 
-.item form input {
+.item .increment-input {
   width: 30px;
   height: 30px;
   border: none;
@@ -116,7 +116,7 @@ html {
   -webkit-appearance: none;
   /* border: none; */
 }
-.item form input::-webkit-outer-spin-button,
+.item .increment-input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -moz-appearance: textfield;
   -webkit-appearance: none;

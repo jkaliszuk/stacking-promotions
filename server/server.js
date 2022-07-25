@@ -49,11 +49,11 @@ const promotionStackableObj = {
     redeemables: []
 };
 
-app.post("/get-default-items", (req, res) => {
+app.get("/default-items", (req, res) => {
     return res.status(200).send(defaultItems);
 });
 
-const validateRequestedCart = requestedCart => {
+const mapInputIntoKnownProducts = requestedCart => {
     return requestedCart.map(requestedItem => {
         const item = defaultItems.find(item => requestedItem?.id && item.id === requestedItem.id);
         if (!item) {
@@ -67,25 +67,24 @@ const calculateCartTotalAmount = items => items.reduce((sum, item) => sum + (ite
 
 app.post("/validate-promotion", asyncHandler(async (req, res) => {
     const products = req.body.items;
-    const items = validateRequestedCart(products);
+    const items = mapInputIntoKnownProducts(products);
 
     const { promotions } = await client.promotions.validate({
         customer: customer,
         order   : { amount: calculateCartTotalAmount(items) } });
-    const hotPromotion = promotions.map(voucher => voucher).filter(voucher => voucher.name.startsWith("Hot Promotion"));
+    const hotPromotion = promotions.filter(voucher => voucher.name.startsWith("Hot Promotion"));
 
     return res.status(200).send(hotPromotion);
 }));
 
 const removeDuplicatedPromoObjects = array => {
-    array = array.filter((value, index, self) => index === self.findIndex(t => (t.id === value.id)));
-    return array;
+    return array.filter((value, index, self) => index === self.findIndex(t => (t.id === value.id)));
 };
 
 app.post("/validate-stackable", asyncHandler(async (req, res) => {
     const vouchersArray = req.body.vouchersArray;
     const products = req.body.items;
-    const items = validateRequestedCart(products);
+    const items = mapInputIntoKnownProducts(products);
     if (!vouchersArray) {
         return res.send({
             message: "Voucher code is required"
@@ -97,10 +96,19 @@ app.post("/validate-stackable", asyncHandler(async (req, res) => {
 
     try {
         const { redeemables, order } = await client.validations.validateStackable(promotionStackableObj);
+        const [ voucher ] = redeemables.filter(voucher => voucher.status === "INAPPLICABLE");
+
+        if (voucher?.result?.error) {
+            return res.status(404).send({
+                status : "error",
+                message: voucher.result.error.details
+            });
+        }
         return res.status(200).send({
             amount     : order.amount,
             allDiscount: order.total_applied_discount_amount,
-            redeemables
+            redeemables,
+            result     : redeemables.filter(voucher => voucher.result.error)
         });
     } catch {
         return res.status(400).send({
@@ -113,7 +121,7 @@ app.post("/validate-stackable", asyncHandler(async (req, res) => {
 app.post("/redeem-voucher", asyncHandler(async (req, res) => {
     const vouchersArray = req.body.vouchersArray;
     const products = req.body.items;
-    const items = validateRequestedCart(products);
+    const items = mapInputIntoKnownProducts(products);
 
     promotionStackableObj.order.amount = calculateCartTotalAmount(items);
     promotionStackableObj.redeemables = vouchersArray;

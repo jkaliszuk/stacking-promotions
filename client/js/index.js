@@ -1,14 +1,17 @@
 import {
     getCartAndVoucherFromSessionStorage,
     getCartPreviewRender,
-    checkoutButton,
+    queryCheckoutButton,
     displayErrorMessage,
     filterAndReduceProducts,
     getOrderSummaryRender,
-    saveCartAndVoucherInSessioStorage,
-    checkIfNoErrors,
-    filterPromotionTierFromVouchers
+    saveCartAndVoucherInSessionStorage,
+    validateInput,
+    filterPromotionTierFromVouchers,
+    updateVoucherPropertiesState
 } from "./lib.js";
+
+const checkoutButton = queryCheckoutButton();
 
 const state = {
     products         : [],
@@ -24,34 +27,21 @@ getCartAndVoucherFromSessionStorage().then(data => {
 
 const onIncrement = async (index, render) => {
     state.products[index].quantity++;
-    await checkPromotionTier(state.products);
-    try {
-        await validateAndUpdateVoucherProperties(state.voucherProperties, state.products);
-    } catch (error) {
-        displayErrorMessage(error.message);
-    }
-    render(state.products);
-    renderOrderSummary(state.products, state.voucherProperties);
+    await validateAndRenderSummaryAndProductCards(state.voucherProperties, state.products, render);
 };
 const onDecrement = async (index, render) => {
     if (state.products[index].quantity <= 0) { return; }
     state.products[index].quantity--;
-    await checkPromotionTier(state.products);
-    try {
-        await validateAndUpdateVoucherProperties(state.voucherProperties, state.products);
-    } catch (error) {
-        displayErrorMessage(error.message);
-    }
-    render(state.products);
-    renderOrderSummary(state.products, state.voucherProperties);
+    await validateAndRenderSummaryAndProductCards(state.voucherProperties, state.products, render);
 };
 const renderCartPreview = getCartPreviewRender({ onIncrement, onDecrement });
 
 const onVoucherCodeSubmit = async (voucher, render) => {
     try {
-        checkIfNoErrors(state.products, voucher);
+        validateInput(state.products, voucher);
         await checkPromotionTier(state.products);
-        await validateAndUpdateVoucherProperties(state.voucherProperties, state.products);
+        const { redeemables, amount } = await validateAndUpdateVoucherProperties(state.voucherProperties, state.products);
+        updateVoucherPropertiesState(state.voucherProperties, amount, redeemables);
         render(state.products, state.voucherProperties);
     } catch (error) {
         displayErrorMessage(error.message, voucher);
@@ -59,8 +49,20 @@ const onVoucherCodeSubmit = async (voucher, render) => {
 };
 const renderOrderSummary = getOrderSummaryRender({ onVoucherCodeSubmit });
 
+const validateAndRenderSummaryAndProductCards = async (voucherProperties, products, render) => {
+    await checkPromotionTier(products);
+    try {
+        const { redeemables, amount } = await validateAndUpdateVoucherProperties(voucherProperties, products);
+        updateVoucherPropertiesState(voucherProperties, amount, redeemables);
+    } catch (error) {
+        displayErrorMessage(error.message);
+    }
+    render(products);
+    renderOrderSummary(products, voucherProperties);
+};
+
 const checkPromotionTier = async products => {
-    filterPromotionTierFromVouchers(state.voucherProperties);
+    state.voucherProperties.redeemables = filterPromotionTierFromVouchers(state.voucherProperties);
     const { items } = filterAndReduceProducts(products);
     const response = await fetch("/validate-promotion", {
         method : "POST",
@@ -72,8 +74,8 @@ const checkPromotionTier = async products => {
     });
     const data = await response.json();
     if (data.length) {
-        const { object, id } = await data[0];
-        state.voucherProperties.redeemables.unshift({ object: object, id: id });
+        const { object, id, discount } = await data[0];
+        state.voucherProperties.redeemables.unshift({ object: object, id: id, discount: discount.amount_off });
     }
     return data;
 };
@@ -96,11 +98,10 @@ const validateAndUpdateVoucherProperties = async (voucherProperties, products) =
         state.voucherProperties.redeemables.pop();
         throw new Error(data.message);
     }
-    state.voucherProperties.amount = data.amount;
-    state.voucherProperties.redeemables = data.redeemables
-        .map(item => { return { object: item.object, id: item.id, discount: item.order.total_applied_discount_amount }; })
-        .filter(voucher => voucher.discount !== 0);
-    return data;
+    return {
+        redeemables: data.redeemables,
+        amount     : data.amount
+    };
 };
 
 checkoutButton.addEventListener("click", e => {
@@ -109,6 +110,6 @@ checkoutButton.addEventListener("click", e => {
         alert("Please validate voucher code or add items to basket");
         return false;
     }
-    saveCartAndVoucherInSessioStorage(state.products, state.voucherProperties);
+    saveCartAndVoucherInSessionStorage(state.products, state.voucherProperties);
     window.location.href = "/checkout.html";
 });
