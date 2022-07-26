@@ -107,8 +107,7 @@ app.post("/validate-stackable", asyncHandler(async (req, res) => {
         return res.status(200).send({
             amount     : order.amount,
             allDiscount: order.total_applied_discount_amount,
-            redeemables,
-            result     : redeemables.filter(voucher => voucher.result.error)
+            redeemables
         });
     } catch {
         return res.status(400).send({
