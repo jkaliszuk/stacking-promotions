@@ -4,6 +4,8 @@
 4. [Quickstart](#quickstart)
 5. [How to run Voucherify samples locally](#voucherify-locally)
 6. [Get support](#support)
+7. [Authors](#authors)
+8. [Licence](#licence)
 
 
 # Stacking-promotions with Voucherify <a id="voucherify-example"></a>
@@ -13,13 +15,13 @@ This sample shows you how to stack different types of promotions with Voucherify
 
 Validating and accepting promo codes in your checkout from scratch might be tricky — calculating discounted prices, error message handling, and localization are just a few things to think about when building a simple promo code redemption flow.
 
-This is where [Voucherify promotion engine](https://docs.voucherify.io/docs) kicks in. Together with our [Promo UI Kit](https://www.figma.com/community/file/1100356622702326488) you can quickly build the best promotion experience for your customers.
+This is where the [Voucherify promotion engine](https://docs.voucherify.io/docs) kicks in. Together with our [Promo UI Kit](https://www.figma.com/community/file/1100356622702326488) you can quickly build the best promotion experience for your customers.
 
-This example introduce online coffee shop and many vouchers in your dashboard are about it.
+This example introduces an online coffee shop and many vouchers in your dashboard are about it.
 
 ## How Voucherify works <a id="voucherify-works"></a>
 
-Note: while calling the [redeem stackable endpoint](https://docs.voucherify.io/reference/redeem-stacked-discounts) is enough to satisfy a basic promo code flow, it's useful to add [validate stackable](https://docs.voucherify.io/reference/validate-stacked-discounts-1) to the flow every time the promo code or cart changes. Validation performs 1-3 points but it doesn't marks the code as used one.
+Note: while calling the [redeem stackable endpoint](https://docs.voucherify.io/reference/redeem-stacked-discounts) is enough to satisfy a basic promo code flow, it's useful to add [validate stackable](https://docs.voucherify.io/reference/validate-stacked-discounts-1) to the flow every time the promo code or cart changes. Validation performs 1-3 points but it doesn't mark the code as used one.
 
 ![](https://github.com/voucherify-samples/voucher-code-redemption/blob/refactor-code/voucherify-integration.png)
 
@@ -36,19 +38,19 @@ The demo is running with a [Sandbox project](https://docs.voucherify.io/docs/tes
 
 ``BLCKFRDY`` ``50%OFF`` and many other vouchers you find in your [Sandbox](https://docs.voucherify.io/docs/free-shipping-discount) > Vouchers.
 
-Some codes have a [validation rules](https://docs.voucherify.io/docs/validation-rules) or different [discount effects](https://docs.voucherify.io/docs/discount-effects) so do not use them or you will not be charged a discount.
+Some codes have [validation rules](https://docs.voucherify.io/docs/validation-rules) or different [discount effects](https://docs.voucherify.io/docs/discount-effects) so do not use them or you will not be charged a discount.
 
 The promo code box accepts Amount and Percentage [discount types](https://docs.voucherify.io/docs/vouchers-1#discount-coupons), more coming soon. 
 
 
 This sample calls three endpoints:
 
-* [Validate promotion](https://docs.voucherify.io/reference/validate-promotions-1) - check if any [promotion tier](https://docs.voucherify.io/docs/promotion-tier) exist.
+* [Validate promotion](https://docs.voucherify.io/reference/validate-promotions-1) - check if any [promotion tier](https://docs.voucherify.io/docs/promotion-tier) exists.
 * [Validate voucher code](https://docs.voucherify.io/reference/validate-voucher) — checks the code against [validation rules](https://docs.voucherify.io/docs/validation-rules) and returns calculated discounts.
-* [Redeem voucher code](https://docs.voucherify.io/reference/redeem-voucher) — runs validation and then marks the voucher as used. After click redemption button you should see message "Voucher redemeed" - that means your redemption process was successfull.
+* [Redeem voucher code](https://docs.voucherify.io/reference/redeem-voucher) — runs validation and then marks the voucher as used. After clicking the redemption button you should see the message "Voucher redeemed" - that means your redemption process was successful.
 
 ## Quickstart <a id="quickstart"></a>
-Before you run this example locally let's check how to started with Voucherify API and dashboard by redeeming your first coupon code by going to [Quickstart](https://docs.voucherify.io/docs/quickstart). This informations helps you understand conception about Voucherify product.
+Before you run this example locally, let's check how to start with Voucherify API and dashboard by redeeming your first coupon code by going to [Quickstart](https://docs.voucherify.io/docs/quickstart). This information helps you understand the conception of the Voucherify product.
 
 ## How to run Voucherify samples locally? <a id="voucherify-locally"></a>
 
@@ -93,3 +95,8 @@ For more tutorials and full API reference, visit our [Developer Hub](https://doc
 
 ## Authors
 [@patricioo1](https://github.com/patricioo1)
+
+
+## Licence 
+
+Consider adding licence 
